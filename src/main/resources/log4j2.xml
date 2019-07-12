@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 日志信息打印级别 TRACE < DEBUG < INFO < WARN < ERROR < FATAL -->
+<Configuration status="OFF">
+	<!-- 定义常量 -->
+	<properties>
+		<property name="LOG_HOME">D:/logs</property>
+		<property name="FILE_NAME">mylog</property>
+	</properties>
+	<Appenders><!-- 日志的输出目的地 -->
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+		</Console>
+		<!-- <File name="MyFile" fileName="D:/logs/maven.log"> -->
+		<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} 
+			- %msg%n" /> -->
+		<!-- </File> -->
+		<!-- Rolling的意思是当满足一定条件后，就重命名原日志文件用于备份，并从新生成一个新的日志文件 -->
+		<RollingRandomAccessFile name="MyFile"
+			fileName="${LOG_HOME}/${FILE_NAME}.log"
+			filePattern="${LOG_HOME}/$${date:yyyy-MM}/${FILE_NAME}-%d{yyyy-MM-dd HH-mm}-%i.log">
+			<PatternLayout
+				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" /><!-- 这个配置需要和filePattern结合使用 -->
+				<SizeBasedTriggeringPolicy size="10 MB" /><!-- 指定当文件体积大于size指定的值时，触发Rolling -->
+			</Policies>
+			<DefaultRolloverStrategy max="20" /><!-- 指定最多保存的文件个数 -->
+		</RollingRandomAccessFile>
+	</Appenders>
+	<Loggers>
+		<Root level="debug">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="MyFile" />
+		</Root>
+		<!-- additivity开启的话，root的也会开启 -->
+		<!-- <Logger name="mylog" level="info" additivity="true"> -->
+		<!-- <AppenderRef ref="MyFile" /> -->
+		<!-- </Logger> -->
+	</Loggers>
+</Configuration>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd 
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd 
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd 
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd 
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd 
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+	<!---开启缓存注解 -->
+	<cache:annotation-driven cache-manager="cacheManager" />
+	
+	<!-- 测试用例暂时引进来 -->
+	<context:property-placeholder location="classpath:redis.properties"/>
+
+	<!-- 引入redis.properties属性文件,在spring-mybatis.xml中已经统一导入 -->
+<!-- 	<context:property-placeholder location="classpath:redis.properties" /> -->
+<!-- 	<util:properties id="redisConfig" location="classpath:redis.properties" /> -->
+	<!-- redis连接池 -->
+	<!-- 初始化缓存管理器 -->
+	<bean id="cacheManager" class="org.springframework.data.redis.cache.RedisCacheManager"
+		c:template-ref="redisTemplate" />
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxTotal" value="${redis.maxActive}" />
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<property name="maxWaitMillis" value="${redis.maxWait}" />
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+		<property name="testOnReturn" value="${redis.testOnReturn}" />
+		<property name="testWhileIdle" value="${redis.testWhileIdle}" />
+	</bean>
+	<!--连接redis数据库的参数 -->
+	<bean id="connectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+		p:host-name="${redis.host}" p:port="${redis.port}" p:pool-config-ref="poolConfig"
+		p:database="${redis.database}" p:use-pool="true" p:password="${redis.password}" />
+	<!-- redis模板 -->
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<!-- 序列化策略 推荐使用StringRedisSerializer -->
+<!--         <property name="keySerializer"> -->
+<!--             <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/> -->
+<!--         </property> -->
+<!--         <property name="valueSerializer"> -->
+<!--             <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/> -->
+<!--         </property> -->
+<!--         <property name="hashKeySerializer"> -->
+<!--             <bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"/> -->
+<!--         </property> -->
+<!--         <property name="hashValueSerializer"> -->
+<!--             <bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"/> -->
+<!--         </property> -->
+	</bean>
+
+</beans>

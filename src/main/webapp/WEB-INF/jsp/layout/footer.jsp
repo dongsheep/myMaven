@@ -1,0 +1,1 @@
+<div id="footer" align="center" class="my-footer">Copyright dong project 2017</div>

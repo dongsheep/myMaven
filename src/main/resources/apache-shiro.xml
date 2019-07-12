@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+	<description>Shiro Security</description>
+
+	<!-- shiro过滤 -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<property name="loginUrl" value="/login.html" />
+		<property name="successUrl" value="/" />
+<!-- 		<property name="unauthorizedUrl" value="/login.html" /> -->
+
+		<property name="filterChainDefinitions">
+			<value>
+				/login.html = authc
+<!-- 			    /welcome/** = anon -->
+<!-- 				/api/** = authcBasic	 -->
+<!-- 				/login.html = authc authc 表示需要认证才能访问的页面 -->
+				/** = anon
+			</value>
+		</property>
+	</bean>
+	
+	<!-- 把处理登录的service先注进来 -->
+	<bean id="accountService" class="com.dong.service.impl.AccountServiceImpl"></bean>
+
+	<!-- 自定义实现的shiroRealm -->
+	<bean id="myShiroRealm" class="com.dong.constant.MyShiroRealm">
+		<property name="accountService" ref="accountService" />
+	</bean>
+
+	<!-- shiro管理 -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="myShiroRealm"></property>
+		<property name="cacheManager" ref="shiroEhcacheManager" />
+	</bean>
+	
+	<!-- EhCache -->
+<!-- 	<bean id="ehCacheManager" class= "org.springframework.cache.ehcache.EhCacheManagerFactoryBean" > -->
+<!--    		<property name="configLocation" value="classpath:ehcache-shiro.xml" /> -->
+<!-- 	</bean> -->
+	
+	<!-- 用户授权信息Cache, 采用EhCache -->
+<!-- 	<bean id="shiroEhcacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager"> -->
+<!-- 		<property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml"/> -->
+<!-- 	</bean> -->
+	
+	<!-- 这里有个问题：redis缓存和shiro缓存有冲突 -->
+	<bean id="shiroEhcacheManager" class="org.apache.shiro.cache.MemoryConstrainedCacheManager"/>
+	
+	<!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
+	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+	
+	<!-- AOP式方法级权限检查  -->
+	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor">
+		<property name="proxyTargetClass" value="true" />
+	</bean>
+	<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+    	<property name="securityManager" ref="securityManager"/>
+	</bean>
+
+</beans>

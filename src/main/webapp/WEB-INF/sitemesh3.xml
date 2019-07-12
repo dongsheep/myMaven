@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemesh>
+	<!-- 拦截任何路径配置装饰器 -->
+	<mapping path="/*" decorator="/WEB-INF/jsp/layout/decorator.jsp"/>
+	<!-- 不需要装饰的路径 -->
+	<mapping path="/js/*" exclue="true"/>
+	<mapping path="/css/*" exclue="true"/>
+
+	<!-- 这里配置自定义的tag -->
+	<content-processor>
+		<tag-rule-bundle class="com.dong.constant.MySiteMeshFilter" />
+	</content-processor>
+</sitemesh>

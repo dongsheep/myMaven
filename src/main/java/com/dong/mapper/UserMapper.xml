@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dong.mapper.UserMapper">
+	
+	 <!-- 开启基于redis的二级缓存 -->
+    <cache type="com.dong.utils.RedisCache"/>
+
+	<select id="findByPage" parameterType="long" resultType="com.dong.domain.User">
+		select * 
+		from dx_t_user limit #{offset}, #{pageSize}
+	</select>
+	
+	<select id="getTotal" resultType="int">
+		select count(*) 
+		from dx_t_user
+	</select>
+	
+	<select id="getOneUser" parameterType="long" resultType="com.dong.domain.User">
+		select *
+		from dx_t_user where userId=#{userId}
+	</select>
+	
+	<update id="update" parameterType="com.dong.domain.User">
+		update dx_t_user set name=#{name} where userId=#{userId} 
+	</update>
+
+	<select id="findByName" parameterType="String" resultType="com.dong.domain.User">
+		select *
+		from dx_t_user where name=#{name}
+	</select>
+
+	<select id="findPermissionsByUserId" parameterType="long" resultType="String">
+		select p.token from dx_t_user u, dx_t_user_role ur,
+		dx_t_role_permission rp, dx_t_permission p where u.userId=#{userId} and u.userId=ur.userId and ur.roleId=rp.roleId and rp.permissionId=p.permissionId
+	</select>
+	
+	<select id="findPermissionsLstByUserId" parameterType="long" resultType="com.dong.domain.Permission">
+		select p.* from dx_t_user u, dx_t_user_role ur,
+		dx_t_role_permission rp, dx_t_permission p where u.userId=#{userId} and u.userId=ur.userId and ur.roleId=rp.roleId and rp.permissionId=p.permissionId 
+		order by p.height
+	</select>
+	
+	<select id="findRolesByUserId" parameterType="long" resultType="String">
+		select r.name from dx_t_user u, dx_t_user_role ur,
+		dx_t_role r where u.userId=#{userId} and u.userId=ur.userId and ur.roleId=r.roleId
+	</select>
+
+	<!-- 调用存储过程 -->
+	<select id="getUserCount" parameterMap="getUserCountMap" statementType="CALLABLE">
+		CALL maven.get_user_count(?,?)
+	</select>
+	<parameterMap type="java.util.Map" id="getUserCountMap">
+		<parameter property="userId" mode="IN" jdbcType="INTEGER" />
+		<parameter property="user_count" mode="OUT" jdbcType="INTEGER" />
+	</parameterMap>
+
+	<!-- 开启二级缓存,使用两个不同的SqlSession对象去执行相同查询条件的查询，第二次查询时不会再发送SQL语句，而是直接从缓存中取出数据 -->
+	<!-- <cache /> -->
+	
+	<insert id="insertUser" parameterType="com.dong.domain.User" useGeneratedKeys="true">
+		insert into dx_t_user(name,password,age,remark,salt,createUser,createDate,modifyUser,modifyDate) 
+		values(#{name,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR},#{age,jdbcType=INTEGER},#{remark,jdbcType=VARCHAR},
+		#{salt,jdbcType=VARCHAR},#{createUser,jdbcType=INTEGER},#{createDate,jdbcType=VARCHAR},#{modifyUser,jdbcType=INTEGER},#{modifyDate,jdbcType=VARCHAR})
+	</insert>
+	
+	<delete id="delUser" parameterType="long">
+		delete from dx_t_user where userId=#{userId}
+	</delete>
+	
+</mapper>
